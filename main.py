@@ -19,9 +19,8 @@ conf_data = {}
 permak_file_id = "SOSTALG.S0"
 xenon_file_id = 'XE'
 
-# default tagret_dir (will be overwritten)
-target_dir = ''
-target_dir_abspath = ''
+target_dir = os.path.join('B34', 'K07')
+target_dir_abspath = os.path.join(working_dir, target_dir)
 
 copy_patterns = {
     40: ('2', '3', '1'),
@@ -201,11 +200,6 @@ def get_configurations():
     conf_File_parser = KeyValueFileParser(os.path.join(working_dir, conf_file_name))
     global conf_data
     conf_data = conf_File_parser.parse_file()
-    
-    global target_dir
-    global target_dir_abspath
-    target_dir = os.path.join(conf_data.get('Unit'), conf_data.get('Camp'))
-    target_dir_abspath = os.path.join(working_dir, target_dir)
 
 
 def get_current_directory():

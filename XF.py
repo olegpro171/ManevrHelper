@@ -48,3 +48,22 @@ class XenonFile:
         
         # Parse the last 2 digits as shut_down
         self.shut_down = (digits_part[5:])
+
+
+class XenonFileSimple:
+    file_name: str
+
+    MoC: int
+    state: int
+    count: int
+
+    def __init__(self, file_name: str, MoC: int, state: int, count: int):
+        self.file_name = file_name
+
+        self.MoC = MoC
+        self.state = state
+        self.count = count
+
+    @property
+    def directory(self):
+        return os.path.dirname(self.file_name)

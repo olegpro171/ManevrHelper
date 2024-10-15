@@ -1,5 +1,6 @@
 import os
 
+from XF import XenonFileSimple
 
 class KeyValueFileParser:
     keywords = {
@@ -64,3 +65,58 @@ class KeyValueFileParser:
             raise KeyError(f'В файле конфигурации отсутствует определение ключей: {self.keywords - self.used_keywords}')
         
         return data
+    
+
+
+class XenonFileParser:
+    file_name: str
+
+    def __init__(self, list_file_name: str):
+        """
+        :param base_directory: Directory where the files are located
+        """
+
+        if not os.path.exists(list_file_name):
+            raise FileNotFoundError(f"Не найден файл списка ксеноновых файлов {list_file_name}")
+        
+
+        self.file_name = list_file_name
+
+
+    def parse_file(self):
+        """
+        Parses the given text file and returns a list of XenonFileSimple objects.
+        
+        :return: List of XenonFileSimple objects
+        """
+        xenon_files = []
+
+        with open(self.file_name, 'r') as file:
+            line_counter = 0
+            for line in file:
+                line_counter += 1
+                if line.startswith('#'):
+                    continue
+                # Remove any extra whitespace and split the line by commas
+                line = line.strip()
+                if line:
+                    parts = line.split(',')
+                    if len(parts) == 4:
+                        name = parts[0].strip()
+                        try:
+                            MoC = int(parts[1].strip())
+                            state = int(parts[2].strip())
+                            count = int(parts[3].strip())
+                        except:
+                            raise TypeError(f"Ошибка на строке {line_counter} в файле {self.file_name}, '{line}'.")
+                        
+                        # Create XenonFileSimple object
+                        xenon_file = XenonFileSimple(
+                            file_name=name,
+                            MoC=MoC,
+                            state=state,
+                            count=count
+                        )
+                        xenon_files.append(xenon_file)
+
+        return xenon_files

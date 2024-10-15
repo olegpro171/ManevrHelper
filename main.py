@@ -5,27 +5,28 @@ import shutil
 import os
 import sys
 
-from XF import XenonFile
+from XF import XenonFile, XenonFileSimple
 from album_task import AlbumTask
-from file_loader import KeyValueFileParser
+from file_loader import KeyValueFileParser, XenonFileParser
 
 # set in main
 working_dir = ''
 
-conf_file_name = "conf.txt"
+xe_list_file_name = "conf_XeList.txt"
+conf_file_name = "conf_Settings.txt"
 conf_data = {}
 
 permak_file_id = "SOSTALG.S0"
 xenon_file_id = 'XE'
 
 # default tagret_dir (will be overwritten)
-target_dir = path.join('B34', 'K07')
-target_dir_abspath = os.path.join(working_dir, target_dir)
+target_dir = ''
+target_dir_abspath = ''
 
 copy_patterns = {
-    '040': ('2', '3', '1'),
-    '300': ('5', '6', '4'),
-    '600': ('8', '9', '7'),
+    40: ('2', '3', '1'),
+    300: ('5', '6', '4'),
+    600: ('8', '9', '7'),
 }
 
 
@@ -35,27 +36,38 @@ def copy():
         print(f"Каталог поиска не найден")
         return
 
-    xenon_raw_files = [ f for f in os.scandir(os.path.join(working_dir, target_dir)) if f.is_file() and f.name.startswith(xenon_file_id) and len(f.name) == 9 ]
-    permak_files = [ f for f in os.scandir(os.path.join(working_dir, target_dir)) if f.is_file() and f.name.startswith(permak_file_id) ]
+    FILE_DIR = os.path.join(working_dir, target_dir)
 
-    xenon_files: list[XenonFile] = []
-    for file in xenon_raw_files:
-        xenon_files.append(XenonFile(file))
+    xenon_raw_files = [ f for f in os.scandir(FILE_DIR) if f.is_file() and f.name.startswith(xenon_file_id) and len(f.name) == 9 ]
+    permak_files = [ f for f in os.scandir(FILE_DIR) if f.is_file() and f.name.startswith(permak_file_id) ]
 
-    if (len(xenon_files) == 0):
+    xe_file_list_parser = XenonFileParser(os.path.join(working_dir, xe_list_file_name))
+    xenon_simple_list: list[XenonFileSimple] = xe_file_list_parser.parse_file()
+    xenon_simple_list_processed: list[XenonFileSimple] = []
+
+    for xe_file in xenon_simple_list:
+        file_path = os.path.join(FILE_DIR, xe_file.file_name)
+        if not os.path.exists(file_path):
+            print(f"Указанный файл ксенона не найден: {file_path}")
+            continue
+        xenon_simple_list_processed.append(XenonFileSimple(file_path, xe_file.MoC, xe_file.state, xe_file.count))
+
+    if (len(xenon_simple_list_processed) == 0):
         print(f"Не найдено файлов соответствующих формату файла ксенона")
         return
 
-    print("Найдены файлы XE:")
-    for xe_file in xenon_files:
-        print(f"\t{xe_file.DirEntry.name}")
+    print("Найдены файлы ксенона:")
+    for xe_file in xenon_simple_list_processed:
+        print(f"\t{xe_file.file_name}")
     
 
-    perform_copy(xenon_files, permak_files)
+    perform_copy(xenon_simple_list_processed, permak_files)
 
 
-def fast_copy_bulk(xenon_file: XenonFile, permak_files: list[os.DirEntry], copy_pattern) -> set[str]:
-    copies_count, state = get_copies_count_states(xenon_file)
+def fast_copy_bulk(xenon_file: XenonFileSimple, permak_files: list[os.DirEntry], copy_pattern) -> set[str]:
+    #  get_copies_count_states(xenon_file)
+
+    copies_count, state = (xenon_file.count, xenon_file.state)
     written_files: set[str] = set()
 
     copy_list: list[str] = []
@@ -65,7 +77,7 @@ def fast_copy_bulk(xenon_file: XenonFile, permak_files: list[os.DirEntry], copy_
         src_filename = ''.join((permak_file_id, copy_pattern[i]))
         src_file = find_dir_entry_by_name(permak_files, src_filename)
 
-        dest_filepath = '.'.join((xenon_file.DirEntry.path, f'S{(i + 1):02d}'))
+        dest_filepath = '.'.join((xenon_file.file_name, f'S{(i + 1):02d}'))
             
         src = os.path.join(working_dir, src_file.path)
         dest = os.path.join(working_dir, dest_filepath)
@@ -79,7 +91,7 @@ def fast_copy_bulk(xenon_file: XenonFile, permak_files: list[os.DirEntry], copy_
     print('...')
     # для остальных
     for i in range(len(copy_pattern), copies_count):
-        dest_filepath = '.'.join((xenon_file.DirEntry.path, f'S{(i + 1):02d}'))
+        dest_filepath = '.'.join((xenon_file.file_name, f'S{(i + 1):02d}'))
         
         src = os.path.join(working_dir, src_file.path)
         dest = os.path.join(working_dir, dest_filepath)
@@ -91,9 +103,8 @@ def fast_copy_bulk(xenon_file: XenonFile, permak_files: list[os.DirEntry], copy_
     print(f"Добавлена задача копирования: {src_file.path} -> {dest_filepath}")
 
     copy_task = '\n'.join(copy_list)
-
     
-    copy_task_path = os.path.join(working_dir, os.path.join(xenon_file.directory, 'copy.bat'))
+    copy_task_path = os.path.join(working_dir, os.path.join(working_dir, 'copy.bat'))
     print(f'Создан скрипт копирования {copy_task_path}')
     with open(copy_task_path, 'w') as f:
         f.write(copy_task)
@@ -119,20 +130,21 @@ def fast_copy_bulk(xenon_file: XenonFile, permak_files: list[os.DirEntry], copy_
 
     return written_files
 
-def perform_copy(xenon_files: list[XenonFile], permak_files: list[os.DirEntry]):
+def perform_copy(xenon_files: list[XenonFileSimple], permak_files: list[os.DirEntry]):
     for xenon_file in xenon_files:
         print()
         print(f"Выполняется копирование для файла {xenon_file.file_name}")
 
-        copy_pattern = copy_patterns.get(xenon_file.time)
+        copy_pattern = copy_patterns.get(xenon_file.MoC)
         if copy_pattern == None:
-            raise Exception(F"Не найден шаблон для заданного параметра Time. Файл: {xenon_file.file_name}.")
+            raise Exception(F"Не найден шаблон для заданного параметра MoC = {xenon_file.MoC}. Файл: {xenon_file.file_name}.")
 
-        copies_count, state = get_copies_count_states(xenon_file)
+        # copies_count, state = get_copies_count_states(xenon_file)
+        copies_count, state = (xenon_file.count, xenon_file.state)
         
         written_files: set[str] = fast_copy_bulk(xenon_file, permak_files, copy_pattern)
         
-        new_dir = os.path.join(working_dir, xenon_file.DirEntry.path + "_dir")
+        new_dir = os.path.join(working_dir, xenon_file.file_name + "_dir")
         
         album_task_str = AlbumTask.get_task_text(xenon_file, copies_count, state, new_dir, conf_data.get('Camp'))
         album_task_path = os.path.join(working_dir, os.path.join(xenon_file.directory, 'man.dat'))
@@ -252,6 +264,7 @@ if __name__ == '__main__':
         main()
     except Exception as ex:
         print(ex)
+        raise ex
     finally:
         pass
         #print("Нажмите ENTER чтобы закрыть")

@@ -1,6 +1,6 @@
 import os
 
-from XF import XenonFile
+from XF import XenonFile, XenonFileSimple
 
 task_pattern = """
 Unit = {xe_directory_absolute_no_K07}
@@ -38,10 +38,10 @@ end
 """
 
 class AlbumTask:
-    def get_task_text(file: XenonFile, count: int, state: int, new_dir: str, camp_name):
-        xe_directory_absolute: str = os.path.abspath(file.DirEntry.path)
+    def get_task_text(file: XenonFileSimple, count: int, state: int, new_dir: str, camp_name):
+        xe_directory_absolute: str = os.path.abspath(os.path.dirname(file.file_name))
 
-        base_name = file.DirEntry.name.split('.')[0]
+        base_name = os.path.basename(file.file_name).split('.')[0]
         return task_pattern.format(
             name = base_name,
             state = state, 

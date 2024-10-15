@@ -70,6 +70,7 @@ def fast_copy_bulk(xenon_file: XenonFileSimple, permak_files: list[os.DirEntry],
     written_files: set[str] = set()
 
     copy_list: list[str] = []
+    copy_list.append("@echo off")
 
     ## Для первых трех файлов
     for i in range(0, len(copy_pattern)):
@@ -236,7 +237,7 @@ if __name__ == '__main__':
         raise ex
     finally:
         pass
-        #print("Нажмите ENTER чтобы закрыть")
-        #input()
+        print("Нажмите ENTER чтобы закрыть")
+        input()
 
     

@@ -112,7 +112,7 @@ def fast_copy_bulk(xenon_file: XenonFileSimple, permak_files: list[os.DirEntry],
     command = [copy_task_path]
     try:
         print("Запуск скрипта копирования")
-        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        result = subprocess.run(command, capture_output=False, stdout=subprocess.DEVNULL)
         print("Вывод:")
         print(result.stdout)  # Standard output
         print('---')
@@ -162,7 +162,7 @@ def perform_copy(xenon_files: list[XenonFileSimple], permak_files: list[os.DirEn
 
         try:
             print("Запуск альбома")
-            result = subprocess.run(command, capture_output=True, text=True, check=True)
+            result = subprocess.run(command, capture_output=False)
             print("Вывод:")
             print(result.stdout)  # Standard output
             print('---')

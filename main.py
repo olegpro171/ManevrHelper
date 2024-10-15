@@ -191,31 +191,6 @@ def perform_copy(xenon_files: list[XenonFileSimple], permak_files: list[os.DirEn
         pass
 
 
-def get_copies_count_states(xenon_file: XenonFile) -> tuple[int]:
-    errmsg = f"Неверная комбинация S и P. Файл: {xenon_file.file_name}; (P, S) = ({xenon_file.power}, {xenon_file.shut_down})"
-
-    count = -1
-    state = -1
-
-    if xenon_file.power == '40':
-        if xenon_file.shut_down == '05':
-            count = int(conf_data.get('NS_40_05_copy_count'))
-            state = int(conf_data.get('NS_40_05_copy_count'))
-        elif xenon_file.shut_down == '60':
-            count = int(conf_data.get('NS_40_60_copy_count'))
-            state = int(conf_data.get('NS_40_60_state'))
-    elif xenon_file.power == '01':
-        if xenon_file.shut_down == '60':
-            count = int(conf_data.get('NS_01_60_copy_count'))
-            state = int(conf_data.get('NS_01_60_state'))
-    
-    if count == -1 or state == -1:
-        raise Exception(errmsg)
-    
-    return count, state
-
-
-
 def find_dir_entry_by_name(entries, target_name):
     # Search for the instance with the specified name
     result = [entry for entry in entries if entry.name == target_name]

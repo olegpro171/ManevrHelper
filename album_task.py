@@ -1,5 +1,7 @@
 import os
 
+from pathlib import Path
+
 from XF import XenonFile, XenonFileSimple
 
 task_pattern = """
@@ -41,14 +43,15 @@ class AlbumTask:
     def get_task_text(file: XenonFileSimple, count: int, state: int, new_dir: str, camp_name):
         xe_directory_absolute: str = os.path.abspath(os.path.dirname(file.file_name))
 
+
         base_name = os.path.basename(file.file_name).split('.')[0]
         return task_pattern.format(
             name = base_name,
             state = state, 
             count = count, 
             count_format = AlbumTask._generate_count_format(count, base_name),
-            xe_directory_absolute = xe_directory_absolute[:-9],
-            xe_directory_absolute_no_K07 = xe_directory_absolute[:-13],
+            xe_directory_absolute = xe_directory_absolute,
+            xe_directory_absolute_no_K07 = xe_directory_absolute[:-4],
             graph_dir=new_dir,
             camp_name=camp_name,
         )

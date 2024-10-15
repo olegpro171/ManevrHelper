@@ -6,15 +6,6 @@ class KeyValueFileParser:
     keywords = {
         "Unit",
         "Camp",
-
-        "NS_40_05_state", 
-        "NS_40_05_copy_count",
-
-        "NS_40_60_state", 
-        "NS_40_60_copy_count",
-
-        "NS_01_60_state",
-        "NS_01_60_copy_count",
     }
 
     used_keywords = set()

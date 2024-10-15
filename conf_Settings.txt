@@ -1,11 +1,2 @@
 Unit = B34
 Camp = K07
-
-NS_40_05_state      = 87
-NS_40_05_copy_count = 387
-
-NS_40_60_state      = 414
-NS_40_60_copy_count = 717
-
-NS_01_60_state      = 447
-NS_01_60_copy_count = 747

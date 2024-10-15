@@ -2,3 +2,7 @@ B*
 .vscode
 venv*
 __pycache__
+
+dist
+main
+*.spec

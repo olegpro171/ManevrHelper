@@ -3,13 +3,14 @@ from os import path
 import shutil
 
 import os
+import sys
 
 from XF import XenonFile
 from album_task import AlbumTask
 from file_loader import KeyValueFileParser
 
-working_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(working_dir)
+# set in main
+working_dir = ''
 
 conf_file_name = "conf.txt"
 conf_data = {}
@@ -219,7 +220,20 @@ def get_configurations():
     target_dir = os.path.join(conf_data.get('Unit'), conf_data.get('Camp'))
     target_dir_abspath = os.path.join(working_dir, target_dir)
 
+
+def get_current_directory():
+    if getattr(sys, 'frozen', False):
+        # If the program is running as an executable
+        return os.path.dirname(sys.executable)
+    else:
+        # If the program is running as a script
+        return os.path.dirname(os.path.abspath(__file__))
+
+
 def main():
+    global working_dir
+    working_dir = get_current_directory()
+
     try:
         get_configurations()
     except FileNotFoundError as ex:

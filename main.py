@@ -6,14 +6,18 @@ import os
 
 from XF import XenonFile
 from album_task import AlbumTask
+from file_loader import KeyValueFileParser
 
 working_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(working_dir)
 
+conf_file_name = "conf.txt"
+conf_data = {}
+
 permak_file_id = "SOSTALG.S0"
 xenon_file_id = 'XE'
 
-# tagret_dir
+# default tagret_dir (will be overwritten)
 target_dir = path.join('B34', 'K07')
 target_dir_abspath = os.path.join(working_dir, target_dir)
 
@@ -129,7 +133,7 @@ def perform_copy(xenon_files: list[XenonFile], permak_files: list[os.DirEntry]):
         
         new_dir = os.path.join(working_dir, xenon_file.DirEntry.path + "_dir")
         
-        album_task_str = AlbumTask.get_task_text(xenon_file, copies_count, state, new_dir)
+        album_task_str = AlbumTask.get_task_text(xenon_file, copies_count, state, new_dir, conf_data.get('Camp'))
         album_task_path = os.path.join(working_dir, os.path.join(xenon_file.directory, 'man.dat'))
 
         if not os.path.exists(new_dir):
@@ -171,7 +175,6 @@ def perform_copy(xenon_files: list[XenonFile], permak_files: list[os.DirEntry]):
         
         print(f"Файлов удалено: {removed_counter}")
 
-
         pass
 
 
@@ -183,15 +186,15 @@ def get_copies_count_states(xenon_file: XenonFile) -> tuple[int]:
 
     if xenon_file.power == '40':
         if xenon_file.shut_down == '05':
-            count = 387
-            state = 87
+            count = int(conf_data.get('NS_40_05_copy_count'))
+            state = int(conf_data.get('NS_40_05_copy_count'))
         elif xenon_file.shut_down == '60':
-            count = 717
-            state = 414
+            count = int(conf_data.get('NS_40_60_copy_count'))
+            state = int(conf_data.get('NS_40_60_state'))
     elif xenon_file.power == '01':
         if xenon_file.shut_down == '60':
-            count = 747
-            state = 447
+            count = int(conf_data.get('NS_01_60_copy_count'))
+            state = int(conf_data.get('NS_01_60_state'))
     
     if count == -1 or state == -1:
         raise Exception(errmsg)
@@ -206,10 +209,38 @@ def find_dir_entry_by_name(entries, target_name):
     return result[0] if result else None
 
 
+def get_configurations():
+    conf_File_parser = KeyValueFileParser(os.path.join(working_dir, conf_file_name))
+    global conf_data
+    conf_data = conf_File_parser.parse_file()
+    
+    global target_dir
+    global target_dir_abspath
+    target_dir = os.path.join(conf_data.get('Unit'), conf_data.get('Camp'))
+    target_dir_abspath = os.path.join(working_dir, target_dir)
 
 def main():
+    try:
+        get_configurations()
+    except FileNotFoundError as ex:
+        print(ex)
+        return
+    
+    except KeyError as ex:
+        print(ex)
+        return
+    
     copy()
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as ex:
+        print(ex)
+    finally:
+        pass
+        #print("Нажмите ENTER чтобы закрыть")
+        #input()
+
+    

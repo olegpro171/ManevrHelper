@@ -6,9 +6,9 @@ task_pattern = """
 Unit = {xe_directory_absolute_no_K07}
 Graph = {graph_dir}
 
-RC_Axs_Sost K07 [{name} (Bar = (0,280,243,280,375,240), Process=Total, 2Dpole=none, Sfactor=yes, Type=File, NumSost=({state}-{count}))
+RC_Axs_Sost {camp_name} [{name} (Bar = (0,280,243,280,375,240), Process=Total, 2Dpole=none, Sfactor=yes, Type=File, NumSost=({state}-{count}))
 
-RC2_5 K07 [{name} (Type=File, BaseSost=1,  Interval = 0.1, PSI_Interval = 5.0, NumSost=({state}-{count}),
+RC2_5 {camp_name} [{name} (Type=File, BaseSost=1,  Interval = 0.1, PSI_Interval = 5.0, NumSost=({state}-{count}),
 & Process = Total, SFactor=yes, Cancel = BarLine, Bar = ( 
 &  22.0, 160,
 &  24.0, 160.0,
@@ -18,7 +18,7 @@ RC2_5 K07 [{name} (Type=File, BaseSost=1,  Interval = 0.1, PSI_Interval = 5.0, N
 &  70.0, 75.0,
 & ) )
 
-RC2_5 K07 [{name} (Type=File, BaseSost=2,  Interval = 0.1, PSI_Interval = 5.0, NumSost=({state}-{count}),  
+RC2_5 {camp_name} [{name} (Type=File, BaseSost=2,  Interval = 0.1, PSI_Interval = 5.0, NumSost=({state}-{count}),  
 & Process = Total, SFactor=yes, Cancel = BarLine, Bar = ( 
 &  22.0, 160,
 &  24.0, 160.0,
@@ -38,7 +38,7 @@ end
 """
 
 class AlbumTask:
-    def get_task_text(file: XenonFile, count: int, state: int, new_dir: str):
+    def get_task_text(file: XenonFile, count: int, state: int, new_dir: str, camp_name):
         xe_directory_absolute: str = os.path.abspath(file.DirEntry.path)
 
         base_name = file.DirEntry.name.split('.')[0]
@@ -50,6 +50,7 @@ class AlbumTask:
             xe_directory_absolute = xe_directory_absolute[:-9],
             xe_directory_absolute_no_K07 = xe_directory_absolute[:-13],
             graph_dir=new_dir,
+            camp_name=camp_name,
         )
     
 

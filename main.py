@@ -132,6 +132,30 @@ def fast_copy_bulk(xenon_file: XenonFileSimple, permak_files: list, copy_pattern
 
     return written_files
 
+
+def delete_bulk(file_paths: set, bat_file_name="delete_files.bat"):
+    """
+    Creates a .bat file to delete files and runs the .bat file.
+
+    :param file_paths: A set of file paths to delete.
+    :param bat_file_name: Name of the .bat file to create (optional).
+    """
+    # Step 1: Create the .bat file
+    with open(bat_file_name, 'w') as bat_file:
+        bat_file.write("@echo off\n")  # Optional, to suppress output
+        for file_path in file_paths:
+            # Escape spaces and handle Windows paths
+            bat_file.write(f'del "{file_path}"\n')
+
+    # Step 2: Run the .bat file
+    try:
+        subprocess.run([bat_file_name], check=True, shell=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error occurred while running the .bat file: {e}")
+    except OSError:
+        print('Пропуск запуска скрипта удаления (OSError)')
+
+
 def perform_copy(xenon_files: list, permak_files: list):
     for xenon_file in xenon_files:
         print()
@@ -146,6 +170,7 @@ def perform_copy(xenon_files: list, permak_files: list):
         
         written_files: set[str] = fast_copy_bulk(xenon_file, permak_files, copy_pattern)
         
+
         
         new_dir = os.path.join(working_dir, xenon_file.file_name + "_dir")
         
@@ -183,13 +208,15 @@ def perform_copy(xenon_files: list, permak_files: list):
             # print('Файл задачи альбома удален')
         
         
-        removed_counter = 0
-        for written_file in written_files:
-            if (path.exists(written_file)):
-                os.remove(written_file)
-                removed_counter += 1
+        print("Запуск скрипта удаления файлов")
+        delete_bulk(written_files)
+        # removed_counter = 0
+        # for written_file in written_files:
+        #     if (path.exists(written_file)):
+        #         os.remove(written_file)
+        #         removed_counter += 1
         
-        print(f"Файлов удалено: {removed_counter}")
+        print(f"Скрипт завершил работу")
 
         pass
 

@@ -63,7 +63,7 @@ def copy():
     perform_copy(xenon_simple_list_processed, permak_files)
 
 
-def fast_copy_bulk(xenon_file: XenonFileSimple, permak_files: list[os.DirEntry], copy_pattern) -> set[str]:
+def fast_copy_bulk(xenon_file: XenonFileSimple, permak_files: list, copy_pattern) -> set:
     #  get_copies_count_states(xenon_file)
 
     copies_count, state = (xenon_file.count, xenon_file.state)
@@ -132,7 +132,7 @@ def fast_copy_bulk(xenon_file: XenonFileSimple, permak_files: list[os.DirEntry],
 
     return written_files
 
-def perform_copy(xenon_files: list[XenonFileSimple], permak_files: list[os.DirEntry]):
+def perform_copy(xenon_files: list, permak_files: list):
     for xenon_file in xenon_files:
         print()
         print(f"Выполняется копирование для файла {xenon_file.file_name}")
@@ -145,6 +145,7 @@ def perform_copy(xenon_files: list[XenonFileSimple], permak_files: list[os.DirEn
         copies_count, state = (xenon_file.count, xenon_file.state)
         
         written_files: set[str] = fast_copy_bulk(xenon_file, permak_files, copy_pattern)
+        
         
         new_dir = os.path.join(working_dir, xenon_file.file_name + "_dir")
         
@@ -207,6 +208,7 @@ def get_configurations():
     global target_dir
     global target_dir_abspath
     target_dir = os.path.join(conf_data.get('Unit'), conf_data.get('Camp'))
+
     target_dir_abspath = os.path.join(working_dir, target_dir)
 
 

@@ -19,8 +19,8 @@ conf_data = {}
 permak_file_id = "SOSTALG.S0"
 xenon_file_id = 'XE'
 
-target_dir = os.path.join('B34', 'K07')
-target_dir_abspath = os.path.join(working_dir, target_dir)
+target_dir = ''
+target_dir_abspath = ''
 
 copy_patterns = {
     40: ('2', '3', '1'),
@@ -76,6 +76,8 @@ def fast_copy_bulk(xenon_file: XenonFileSimple, permak_files: list[os.DirEntry],
     for i in range(0, len(copy_pattern)):
         src_filename = ''.join((permak_file_id, copy_pattern[i]))
         src_file = find_dir_entry_by_name(permak_files, src_filename)
+        if src_file == None:
+            raise FileNotFoundError(f'Не найден файл {src_filename}')
 
         dest_filepath = '.'.join((xenon_file.file_name, f'S{(i + 1):02d}'))
             
@@ -201,6 +203,11 @@ def get_configurations():
     conf_File_parser = KeyValueFileParser(os.path.join(working_dir, conf_file_name))
     global conf_data
     conf_data = conf_File_parser.parse_file()
+
+    global target_dir
+    global target_dir_abspath
+    target_dir = os.path.join(conf_data.get('Unit'), conf_data.get('Camp'))
+    target_dir_abspath = os.path.join(working_dir, target_dir)
 
 
 def get_current_directory():
